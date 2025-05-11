@@ -8,7 +8,7 @@ data = {
 }
 
 response = requests.post(url_generate_webhook, json=data)
-response.raise_for_status()  # This will raise an error if the response status is not 2xx
+response.raise_for_status()  
 response_data = response.json()
 
 webhook_url = response_data.get("webhook")
@@ -28,21 +28,17 @@ print("SQL Question URL:", question_url)
 
 
 sql_query = """SELECT 
-    p.AMOUNT AS SALARY,
-    CONCAT(e.FIRST_NAME, ' ', e.LAST_NAME) AS NAME,
-    FLOOR(DATEDIFF(CURDATE(), e.DOB) / 365) AS AGE,
-    d.DEPARTMENT_NAME
-FROM 
-    PAYMENTS p
-JOIN 
-    EMPLOYEE e ON p.EMP_ID = e.EMP_ID
-JOIN 
-    DEPARTMENT d ON e.DEPARTMENT = d.DEPARTMENT_ID
-WHERE 
-    DAY(p.PAYMENT_TIME) != 1
-ORDER BY 
-    p.AMOUNT DESC
-LIMIT 1;"""  
+  e1.emp_id,
+  e1.first_name,
+  e1.last_name,
+  d.department_name,
+  (SELECT COUNT(*) 
+   FROM employee e2 
+   WHERE e2.department = e1.department 
+   AND e2.DOB > e1.DOB) AS YOUNGER_EMPLOYEES_COUNT
+FROM employee e1
+JOIN department d ON e1.department = d.department_id
+ORDER BY e1.emp_id DESC;"""  
 
 url_submit_query = 'https://bfhldevapigw.healthrx.co.in/hiring/testWebhook/PYTHON'
 headers = {
